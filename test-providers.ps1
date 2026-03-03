@@ -18,8 +18,12 @@ Write-Host ""
 # Проверка прокси
 $process = Get-Process -Name "cliproxyapi-plus" -ErrorAction SilentlyContinue
 if (-not $process) {
+    $scriptPath = $PSScriptRoot
+    if (-not $scriptPath) {
+        $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+    }
     Write-Host "X Прокси сервер не запущен!" -ForegroundColor Red
-    Write-Host "  Запустите: D:\tools\ai\start-proxy-server.ps1" -ForegroundColor Yellow
+    Write-Host "  Запустите: $scriptPath\start-proxy-server.ps1" -ForegroundColor Yellow
     exit 1
 }
 
@@ -134,8 +138,12 @@ if ($Model) {
     Write-Host "  Результаты: $success успешно, $failed ошибок" -ForegroundColor Cyan
     Write-Host "=======================================================" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "Для теста всех моделей: D:\tools\ai\test-providers.ps1 -All" -ForegroundColor Gray
-    Write-Host "Для теста конкретной:   D:\tools\ai\test-providers.ps1 -Model gemini-2.0-flash-exp" -ForegroundColor Gray
+    $scriptPath = $PSScriptRoot
+    if (-not $scriptPath) {
+        $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+    }
+    Write-Host "Для теста всех моделей: $scriptPath\test-providers.ps1 -All" -ForegroundColor Gray
+    Write-Host "Для теста конкретной:   $scriptPath\test-providers.ps1 -Model gemini-2.0-flash-exp" -ForegroundColor Gray
 }
 
 Write-Host ""

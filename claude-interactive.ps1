@@ -32,7 +32,11 @@ if (-not (Test-ProxyRunning)) {
             Write-Host "   ✓ Прокси запущен" -ForegroundColor Green
         }
     } else {
-        Write-Host "   Запустите: D:\tools\ai\start-proxy-server.ps1" -ForegroundColor Cyan
+        $scriptPath = $PSScriptRoot
+        if (-not $scriptPath) {
+            $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+        }
+        Write-Host "   Запустите: $scriptPath\start-proxy-server.ps1" -ForegroundColor Cyan
         Write-Host "   Или добавьте флаг: -AutoStart" -ForegroundColor Gray
         Write-Host ""
         exit 1

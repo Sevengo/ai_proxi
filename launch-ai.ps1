@@ -328,8 +328,12 @@ function Start-CopilotCLI {
     
     Write-Host ""
     Write-Host "⚠️  ВАЖНО: GitHub Copilot сам выбирает модель" -ForegroundColor Yellow
+    $scriptPath = $PSScriptRoot
+    if (-not $scriptPath) {
+        $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+    }
     Write-Host "   Для использования $Model запустите Claude CLI:" -ForegroundColor Yellow
-    Write-Host "   D:\tools\ai\launch-ai.ps1 -Tool claude -Provider $Provider -Model $Model" -ForegroundColor Cyan
+    Write-Host "   $scriptPath\launch-ai.ps1 -Tool claude -Provider $Provider -Model $Model" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "Прокси: $proxyUrl" -ForegroundColor Cyan
     Write-Host ""
@@ -396,7 +400,11 @@ if ($List) {
 if (-not (Start-ProxyServer)) {
     Write-Host ""
     Write-Host "✗ Не удалось запустить прокси сервер" -ForegroundColor Red
-    Write-Host "Запустите вручную: D:\tools\ai\start-proxy-server.ps1" -ForegroundColor Yellow
+    $scriptPath = $PSScriptRoot
+    if (-not $scriptPath) {
+        $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+    }
+    Write-Host "Запустите вручную: $scriptPath\start-proxy-server.ps1" -ForegroundColor Yellow
     exit 1
 }
 

@@ -15,6 +15,12 @@ param(
 $configPath = "C:\Users\s.semihod\.cli-proxy-api\config.yaml"
 $exePath = "C:\Users\s.semihod\bin\cliproxyapi-plus.exe"
 
+# Определяем путь к скриптам
+$scriptPath = $PSScriptRoot
+if (-not $scriptPath) {
+    $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+}
+
 function Show-Menu {
     Write-Host ""
     Write-Host "===============================================" -ForegroundColor Cyan
@@ -32,10 +38,10 @@ function Show-Menu {
     Write-Host "  proxy -Help      " -NoNewline; Write-Host "Показать справку" -ForegroundColor Gray
     Write-Host ""
     Write-Host "Скрипты настройки:" -ForegroundColor Yellow
-    Write-Host "  D:\tools\ai\claude-proxy-setup.ps1" -ForegroundColor Cyan
-    Write-Host "  D:\tools\ai\copilot-proxy-setup.ps1" -ForegroundColor Cyan
+    Write-Host "  $scriptPath\claude-proxy-setup.ps1" -ForegroundColor Cyan
+    Write-Host "  $scriptPath\copilot-proxy-setup.ps1" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "Документация: D:\tools\ai\README.md" -ForegroundColor Green
+    Write-Host "Документация: $scriptPath\README.md" -ForegroundColor Green
     Write-Host "===============================================" -ForegroundColor Cyan
     Write-Host ""
 }
@@ -186,6 +192,6 @@ if ($Restart) {
     Start-Sleep -Seconds 2
     Start-ProxyServer
 }
-if ($Login) { & "D:\tools\ai\batch-oauth-login.ps1" }
+if ($Login) { & "$scriptPath\batch-oauth-login.ps1" }
 if ($Test) { Test-ProxyAPI }
 if ($Models) { Show-Models }
