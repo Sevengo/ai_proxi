@@ -4,7 +4,11 @@
 
 $desktopPath = [Environment]::GetFolderPath("Desktop")
 $aiFolder = Join-Path $desktopPath "AI"
-$toolsPath = "D:\tools\ai"
+# Определяем путь к скриптам автоматически из текущей директории
+$toolsPath = $PSScriptRoot
+if (-not $toolsPath) {
+    $toolsPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+}
 
 # Detect PowerShell
 $pwshPath = Get-Command pwsh.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
@@ -31,8 +35,15 @@ function New-AIShortcut {
         [string]$Description
     )
     
+    # Проверяем существование скрипта launch-ai.ps1
+    $launchScript = Join-Path $toolsPath "launch-ai.ps1"
+    if (-not (Test-Path $launchScript)) {
+        Write-Host "⚠️  Файл не найден: $launchScript" -ForegroundColor Red
+        return
+    }
+    
     $shortcutPath = Join-Path $aiCliFolder "$Name.lnk"
-    $arguments = "-NoExit -File `"$toolsPath\launch-ai.ps1`" -Tool $Tool -Provider $Provider -Model $Model"
+    $arguments = "-NoExit -File `"$launchScript`" -Tool $Tool -Provider $Provider -Model $Model"
     
     $shell = New-Object -ComObject WScript.Shell
     $shortcut = $shell.CreateShortcut($shortcutPath)
@@ -100,17 +111,23 @@ New-AIShortcut `
 
 # Универсальный лаунчер с меню
 $launcherPath = Join-Path $aiCliFolder "AI Launcher (Menu).lnk"
-$shell = New-Object -ComObject WScript.Shell
-$shortcut = $shell.CreateShortcut($launcherPath)
-$shortcut.TargetPath = $pwshPath
-$shortcut.Arguments = "-NoExit -File `"$toolsPath\launch-ai.ps1`""
-$shortcut.Description = "Универсальный лаунчер AI CLI с интерактивным меню"
-$shortcut.WorkingDirectory = $env:USERPROFILE
-$shortcut.Save()
-$bytes = [System.IO.File]::ReadAllBytes($launcherPath)
-$bytes[0x15] = $bytes[0x15] -bor 0x20
-[System.IO.File]::WriteAllBytes($launcherPath, $bytes)
-Write-Host "✓ AI Launcher (Menu)" -ForegroundColor Cyan
+$launchScript = Join-Path $toolsPath "launch-ai.ps1"
+
+if (Test-Path $launchScript) {
+    $shell = New-Object -ComObject WScript.Shell
+    $shortcut = $shell.CreateShortcut($launcherPath)
+    $shortcut.TargetPath = $pwshPath
+    $shortcut.Arguments = "-NoExit -File `"$launchScript`""
+    $shortcut.Description = "Универсальный лаунчер AI CLI с интерактивным меню"
+    $shortcut.WorkingDirectory = $env:USERPROFILE
+    $shortcut.Save()
+    $bytes = [System.IO.File]::ReadAllBytes($launcherPath)
+    $bytes[0x15] = $bytes[0x15] -bor 0x20
+    [System.IO.File]::WriteAllBytes($launcherPath, $bytes)
+    Write-Host "✓ AI Launcher (Menu)" -ForegroundColor Cyan
+} else {
+    Write-Host "⚠️  Файл не найден: $launchScript" -ForegroundColor Red
+}
 
 Write-Host ""
 Write-Host "═══════════════════════════════════════════════" -ForegroundColor Green

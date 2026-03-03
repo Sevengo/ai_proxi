@@ -4,7 +4,11 @@
 
 $desktopPath = [Environment]::GetFolderPath("Desktop")
 $aiFolder = Join-Path $desktopPath "AI"
-$toolsPath = "D:\tools\ai"
+# Определяем путь к скриптам автоматически из текущей директории
+$toolsPath = $PSScriptRoot
+if (-not $toolsPath) {
+    $toolsPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+}
 
 # Detect PowerShell executable (prefer pwsh.exe for PowerShell 7+)
 $pwshPath = Get-Command pwsh.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
@@ -31,6 +35,15 @@ function New-Shortcut {
         [string]$Description = "",
         [string]$IconLocation = ""
     )
+    
+    # Проверяем существование целевого файла
+    if ($TargetPath -ne "notepad.exe" -and $Arguments -match '\.ps1"') {
+        $scriptPath = $Arguments -replace '.*-File\s+"([^"]+)".*', '$1'
+        if (-not (Test-Path $scriptPath)) {
+            Write-Host "⚠️  Пропуск '$Name' - файл не найден: $scriptPath" -ForegroundColor Yellow
+            return
+        }
+    }
     
     $shortcutPath = Join-Path $aiFolder "$Name.lnk"
     $shell = New-Object -ComObject WScript.Shell

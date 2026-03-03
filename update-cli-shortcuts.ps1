@@ -5,7 +5,11 @@
 $desktopPath = [Environment]::GetFolderPath("Desktop")
 $aiFolder = Join-Path $desktopPath "AI"
 $aiCliFolder = Join-Path $aiFolder "CLI"
-$toolsPath = "D:\tools\ai"
+# Определяем путь к скриптам автоматически из текущей директории
+$toolsPath = $PSScriptRoot
+if (-not $toolsPath) {
+    $toolsPath = Split-Path -Parent $MyInvocation.MyCommand.Path
+}
 
 # Detect PowerShell
 $pwshPath = Get-Command pwsh.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
@@ -35,8 +39,15 @@ function New-AIShortcut {
         [string]$Description
     )
     
+    # Проверяем существование скрипта
+    $scriptPath = Join-Path $toolsPath $Script
+    if (-not (Test-Path $scriptPath)) {
+        Write-Host "⚠️  Пропуск '$Name' - файл не найден: $scriptPath" -ForegroundColor Yellow
+        return
+    }
+    
     $shortcutPath = Join-Path $aiCliFolder "$Name.lnk"
-    $fullArgs = "-NoExit -File `"$toolsPath\$Script`" $Arguments"
+    $fullArgs = "-NoExit -File `"$scriptPath`" $Arguments"
     
     $shell = New-Object -ComObject WScript.Shell
     $shortcut = $shell.CreateShortcut($shortcutPath)
@@ -114,6 +125,7 @@ Write-Host "  ✓ Ярлыки обновлены!" -ForegroundColor Green
 Write-Host "═══════════════════════════════════════════════════════════" -ForegroundColor Green
 Write-Host ""
 Write-Host "📁 Расположение: $aiCliFolder" -ForegroundColor Cyan
+Write-Host "📂 Путь скриптов: $toolsPath" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "🚀 Рекомендация для начала:" -ForegroundColor Yellow
 Write-Host "   Запустите: [1] Claude - Gemini Flash" -ForegroundColor Cyan
